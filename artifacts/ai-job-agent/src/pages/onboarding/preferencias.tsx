@@ -3,65 +3,61 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Slider } from "@/components/ui/slider";
-import { useSavePreferences } from "@workspace/api-client-react";
+import { useSavePreferences, useGetResume } from "@workspace/api-client-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
+import { MapPin, Wifi, Building2, Users } from "lucide-react";
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 }
+  exit: { opacity: 0, y: -20 },
 };
 
-const rolesList = [
-  "Software Engineer", "Backend", "Automation", 
-  "Platform", "DevOps", "Frontend", "Full Stack"
+const workModes = [
+  { id: "remote",  label: "Remoto",     icon: Wifi },
+  { id: "hybrid",  label: "Híbrido",    icon: Users },
+  { id: "onsite",  label: "Presencial", icon: Building2 },
 ];
 
 export default function Preferencias() {
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
   const savePreferences = useSavePreferences();
-  
-  const [workType, setWorkType] = useState<"remote" | "hybrid" | "onsite" | "any">("remote");
-  const [city, setCity] = useState("");
-  const [roles, setRoles] = useState<string[]>([]);
-  const [salary, setSalary] = useState([15000]);
+  const { data: resume } = useGetResume();
 
-  const toggleRole = (role: string) => {
-    setRoles(prev => 
-      prev.includes(role) 
-        ? prev.filter(r => r !== role)
-        : [...prev, role]
+  const [selectedModes, setSelectedModes] = useState<string[]>(["remote"]);
+  const [city, setCity] = useState("");
+
+  const toggleMode = (id: string) => {
+    setSelectedModes(prev =>
+      prev.includes(id)
+        ? prev.length > 1 ? prev.filter(m => m !== id) : prev
+        : [...prev, id]
     );
   };
 
   const handleContinue = () => {
+    const workType =
+      selectedModes.length === 3 || selectedModes.length === 0
+        ? "any"
+        : (selectedModes[0] as "remote" | "hybrid" | "onsite" | "any");
+
+    const rolesFromResume = resume?.skills?.length
+      ? resume.skills.slice(0, 6)
+      : ["Software Engineer"];
+
     savePreferences.mutate(
-      { 
-        data: { 
+      {
+        data: {
           work_type: workType,
-          city: city || null,
-          roles: roles.length > 0 ? roles : ["Software Engineer"],
-          min_salary: salary[0]
-        } 
+          city: city.trim() || null,
+          roles: rolesFromResume,
+          min_salary: null,
+        },
       },
       {
-        onSuccess: () => {
-          setLocation("/onboarding/analisando");
-        },
-        onError: () => {
-          toast({
-            title: "Erro ao salvar",
-            description: "Houve um problema ao salvar as preferências.",
-            variant: "destructive"
-          });
-          // Proceed anyway for demo
-          setLocation("/onboarding/analisando");
-        }
+        onSuccess: () => setLocation("/onboarding/analisando"),
+        onError: () => setLocation("/onboarding/analisando"),
       }
     );
   };
@@ -75,96 +71,77 @@ export default function Preferencias() {
       className="max-w-xl mx-auto pt-24 px-6"
     >
       <div className="mb-10">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">Qual tipo de vaga você procura?</h1>
-        <p className="text-gray-500">Configure suas preferências para a IA encontrar as melhores oportunidades.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
+          Onde você quer trabalhar?
+        </h1>
+        <p className="text-gray-500">
+          A IA vai analisar seu currículo e candidatar você automaticamente às vagas compatíveis.
+        </p>
       </div>
 
       <div className="space-y-8 bg-white/50 backdrop-blur-md rounded-3xl p-8 border border-gray-100 shadow-sm">
-        
-        {/* Work Type */}
+
+        {/* Work Model — multi-select */}
         <div className="space-y-4">
           <Label className="text-base font-semibold">Modelo de trabalho</Label>
-          <RadioGroup 
-            value={workType} 
-            onValueChange={(val: any) => setWorkType(val)}
-            className="flex gap-4"
-          >
-            {[
-              { id: "remote", label: "Remoto" },
-              { id: "hybrid", label: "Híbrido" },
-              { id: "onsite", label: "Presencial" }
-            ].map(type => (
-              <div key={type.id} className="flex items-center space-x-2">
-                <RadioGroupItem value={type.id} id={type.id} />
-                <Label htmlFor={type.id} className="cursor-pointer">{type.label}</Label>
-              </div>
-            ))}
-          </RadioGroup>
-        </div>
-
-        {/* City */}
-        <div className="space-y-3">
-          <Label htmlFor="city" className="text-base font-semibold">Cidade</Label>
-          <Input 
-            id="city" 
-            placeholder="Ex: Campinas, São Paulo..." 
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="rounded-xl"
-          />
-        </div>
-
-        {/* Roles */}
-        <div className="space-y-3">
-          <Label className="text-base font-semibold">Cargos de interesse</Label>
-          <div className="flex flex-wrap gap-2">
-            {rolesList.map(role => {
-              const isSelected = roles.includes(role);
+          <p className="text-sm text-gray-400 -mt-2">Selecione um ou mais</p>
+          <div className="grid grid-cols-3 gap-3">
+            {workModes.map(({ id, label, icon: Icon }) => {
+              const active = selectedModes.includes(id);
               return (
                 <button
-                  key={role}
-                  onClick={() => toggleRole(role)}
+                  key={id}
+                  type="button"
+                  onClick={() => toggleMode(id)}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border",
-                    isSelected 
-                      ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20"
-                      : "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                    "flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border-2 text-sm font-medium transition-all duration-200",
+                    active
+                      ? "border-primary bg-primary/5 text-primary shadow-md shadow-primary/10"
+                      : "border-gray-200 bg-white text-gray-500 hover:border-gray-300"
                   )}
                 >
-                  {role}
+                  <Icon className={cn("w-5 h-5", active ? "text-primary" : "text-gray-400")} />
+                  {label}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Salary */}
-        <div className="space-y-4 pt-2">
-          <div className="flex justify-between items-center">
-            <Label className="text-base font-semibold">Pretensão salarial (mínima)</Label>
-            <span className="text-lg font-bold text-primary">
-              R$ {salary[0].toLocaleString('pt-BR')}
-            </span>
+        {/* City */}
+        <div className="space-y-3">
+          <Label htmlFor="city" className="text-base font-semibold">
+            Cidade <span className="text-gray-400 font-normal">(opcional)</span>
+          </Label>
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              id="city"
+              placeholder="Ex: São Paulo, Campinas, Remoto..."
+              value={city}
+              onChange={e => setCity(e.target.value)}
+              className="rounded-xl pl-10"
+            />
           </div>
-          <Slider 
-            value={salary} 
-            onValueChange={setSalary} 
-            max={30000} 
-            step={1000}
-            className="py-4"
-          />
         </div>
 
+        {/* Info box */}
+        <div className="rounded-2xl bg-indigo-50 border border-indigo-100 p-4 text-sm text-indigo-700 flex gap-3">
+          <span className="text-xl leading-none">🤖</span>
+          <span>
+            O agente vai ler seu currículo, identificar suas competências e enviar candidaturas automaticamente para todas as vagas compatíveis. Você só precisa acompanhar os retornos.
+          </span>
+        </div>
       </div>
 
       <div className="mt-10 flex justify-end">
-        <Button 
-          size="lg" 
+        <Button
+          size="lg"
           className="rounded-full px-8 text-base shadow-lg hover:shadow-xl transition-all"
           onClick={handleContinue}
           disabled={savePreferences.isPending}
         >
-          {savePreferences.isPending ? "Salvando..." : "Continuar →"}
+          {savePreferences.isPending ? "Salvando..." : "Deixar a IA trabalhar →"}
         </Button>
       </div>
     </motion.div>
