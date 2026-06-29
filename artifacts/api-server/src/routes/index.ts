@@ -6,6 +6,7 @@ import jobsRouter from "./jobs";
 import applicationsRouter from "./applications";
 import agentRouter from "./agent";
 import dashboardRouter from "./dashboard";
+import emailRouter from "./email";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(jobsRouter);
 router.use(applicationsRouter);
 router.use(agentRouter);
 router.use(dashboardRouter);
+router.use(emailRouter);
 
 export default router;
