@@ -1,0 +1,314 @@
+Fluxo correto
+Bem-vindo
+
+↓
+
+Importar currículo
+
+↓
+
+IA analisa currículo
+
+↓
+
+Escolher preferências
+
+↓
+
+Buscar vagas
+
+↓
+
+Aplicar
+
+↓
+
+Acompanhar resultados
+
+Não deveria existir Analytics antes disso.
+
+Página 1
+
+Nada de gráficos.
+
+Apenas isso
+-------------------------------------------------
+
+        AI Job Agent
+
+Encontre vagas e candidate-se automaticamente.
+
+[ Upload do Currículo ]
+
+Arraste seu PDF aqui
+ou
+
+Selecionar arquivo
+
+--------------------------------
+
+Após importar seu currículo,
+a IA irá:
+
+✓ Analisar sua experiência
+
+✓ Identificar suas tecnologias
+
+✓ Encontrar vagas compatíveis
+
+✓ Personalizar cada candidatura
+
+            Continuar →
+
+-------------------------------------------------
+
+Acabou.
+
+Nada mais.
+
+Página 2
+Qual tipo de vaga você procura?
+
+( ) Remoto
+
+( ) Híbrido
+
+( ) Presencial
+
+------------------------
+
+Cidade
+
+Campinas
+
+------------------------
+
+Cargo
+
+Software Engineer
+
+Backend
+
+Automation
+
+Platform
+
+DevOps
+
+------------------------
+
+Salário mínimo
+
+R$ 15.000
+
+------------------------
+
+Continuar →
+Página 3
+Analisando currículo...
+
+██████████████
+
+Encontramos
+
+Python
+
+Go
+
+AWS
+
+GitHub
+
+FastAPI
+
+CI/CD
+
+Automação
+
+Open Source
+
+
+Bem parecido com o onboarding do Cursor ou Notion.
+
+Página 4
+Encontramos 183 vagas.
+
+████████████
+
+95%
+
+93%
+
+91%
+
+89%
+
+Aplicar agora
+
+Só depois disso existe Dashboard.
+
+Dashboard
+
+Muito mais limpo.
+
+Hoje
+
+183 vagas
+
+27 aplicações
+
+4 entrevistas
+
+1 oferta
+
+Só isso.
+
+Sem gráficos gigantes.
+
+Menu
+
+Hoje ele colocou
+
+Dashboard
+
+Matches
+
+Pipeline
+
+Search
+
+Analytics
+
+Logs
+
+Settings
+
+Eu faria
+
+Início
+
+Vagas
+
+Candidaturas
+
+Agente IA
+
+Histórico
+
+Configurações
+
+Muito mais claro.
+
+Linguagem
+
+Hoje ele escreveu
+
+Matches
+
+Pipeline
+
+Analytics
+
+Logs
+
+Settings
+
+Ready To Apply
+
+Found
+
+
+Isso parece software para desenvolvedor.
+
+Para usuário comum deveria ser:
+
+Início
+
+Vagas
+
+Candidaturas
+
+Entrevistas
+
+Histórico
+
+Configurações
+
+E os botões:
+
+Aplicar
+
+Ignorar
+
+Ver vaga
+
+Buscar vagas
+
+Importar currículo
+
+Salvar
+
+Parar agente
+
+Iniciar agente
+
+Sem misturar inglês e português.
+
+Outra coisa que ficou ruim
+
+A página de Matches.
+
+Tem informação demais.
+
+Hoje:
+
+Backend Engineer
+
+95%
+
+Go
+
+Python
+
+AWS
+
+PostgreSQL
+
+Distributed Systems
+
+Missing Ruby
+
+Remote
+
+Salary
+
+Apply
+
+Skip
+
+Muito poluído.
+
+Eu faria:
+
+Backend Engineer
+
+Stripe
+
+Remoto
+
+R$ 22.000
+
+95%
+
+[ Aplicar ]
+
+[ Ver detalhes ]
+
+Ao clicar em Ver detalhes, aí sim abre um painel lateral com:
+
+Tecnologias
+Match completo
+Pontos fortes
+Pontos faltantes
+Carta gerada
+Currículo adaptado

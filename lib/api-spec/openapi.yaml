@@ -3,20 +3,32 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: AI Job Agent API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: resume
+    description: Resume operations
+  - name: preferences
+    description: User preferences
+  - name: jobs
+    description: Job listings
+  - name: applications
+    description: Job applications
+  - name: agent
+    description: AI agent controls
+  - name: dashboard
+    description: Dashboard summary
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +36,300 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /resume:
+    get:
+      operationId: getResume
+      tags: [resume]
+      summary: Get current resume
+      responses:
+        "200":
+          description: Resume data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resume"
+        "404":
+          description: No resume uploaded yet
+    post:
+      operationId: uploadResume
+      tags: [resume]
+      summary: Upload and analyze a resume
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResumeInput"
+      responses:
+        "201":
+          description: Resume analyzed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resume"
+
+  /preferences:
+    get:
+      operationId: getPreferences
+      tags: [preferences]
+      summary: Get user job preferences
+      responses:
+        "200":
+          description: User preferences
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Preferences"
+        "404":
+          description: No preferences set yet
+    post:
+      operationId: savePreferences
+      tags: [preferences]
+      summary: Save job preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PreferencesInput"
+      responses:
+        "200":
+          description: Preferences saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Preferences"
+
+  /jobs:
+    get:
+      operationId: listJobs
+      tags: [jobs]
+      summary: List all matched jobs
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [all, pending, applied, ignored]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: minMatch
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Job"
+
+  /jobs/{id}:
+    get:
+      operationId: getJob
+      tags: [jobs]
+      summary: Get job details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Job details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "404":
+          description: Job not found
+
+  /jobs/{id}/ignore:
+    post:
+      operationId: ignoreJob
+      tags: [jobs]
+      summary: Ignore a job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Job ignored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+
+  /jobs/search:
+    post:
+      operationId: triggerJobSearch
+      tags: [jobs]
+      summary: Trigger job search
+      responses:
+        "200":
+          description: Search triggered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResult"
+
+  /applications:
+    get:
+      operationId: listApplications
+      tags: [applications]
+      summary: List all applications
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [all, applied, interview, offer, rejected]
+      responses:
+        "200":
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Application"
+    post:
+      operationId: createApplication
+      tags: [applications]
+      summary: Apply to a job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationInput"
+      responses:
+        "201":
+          description: Application created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+
+  /applications/{id}:
+    get:
+      operationId: getApplication
+      tags: [applications]
+      summary: Get application details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Application details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+    patch:
+      operationId: updateApplication
+      tags: [applications]
+      summary: Update application status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationUpdate"
+      responses:
+        "200":
+          description: Application updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+
+  /agent/status:
+    get:
+      operationId: getAgentStatus
+      tags: [agent]
+      summary: Get agent running status
+      responses:
+        "200":
+          description: Agent status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentStatus"
+
+  /agent/start:
+    post:
+      operationId: startAgent
+      tags: [agent]
+      summary: Start the AI agent
+      responses:
+        "200":
+          description: Agent started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentStatus"
+
+  /agent/stop:
+    post:
+      operationId: stopAgent
+      tags: [agent]
+      summary: Stop the AI agent
+      responses:
+        "200":
+          description: Agent stopped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentStatus"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent activity feed
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +340,254 @@ components:
       required:
         - status
 
+    Resume:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        experience_years:
+          type: integer
+        summary:
+          type: string
+        analyzed_at:
+          type: string
+      required:
+        - id
+        - name
+        - skills
+
+    ResumeInput:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        raw_text:
+          type: string
+        filename:
+          type: string
+      required:
+        - name
+        - raw_text
+
+    Preferences:
+      type: object
+      properties:
+        id:
+          type: integer
+        work_type:
+          type: string
+          enum: [remote, hybrid, onsite, any]
+        city:
+          type: ["string", "null"]
+        roles:
+          type: array
+          items:
+            type: string
+        min_salary:
+          type: ["integer", "null"]
+        updated_at:
+          type: string
+      required:
+        - id
+        - work_type
+        - roles
+
+    PreferencesInput:
+      type: object
+      properties:
+        work_type:
+          type: string
+          enum: [remote, hybrid, onsite, any]
+        city:
+          type: ["string", "null"]
+        roles:
+          type: array
+          items:
+            type: string
+        min_salary:
+          type: ["integer", "null"]
+      required:
+        - work_type
+        - roles
+
+    Job:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        company:
+          type: string
+        location:
+          type: string
+        work_type:
+          type: string
+          enum: [remote, hybrid, onsite]
+        salary:
+          type: ["integer", "null"]
+        salary_text:
+          type: ["string", "null"]
+        match_score:
+          type: integer
+        skills_match:
+          type: array
+          items:
+            type: string
+        skills_missing:
+          type: array
+          items:
+            type: string
+        description:
+          type: ["string", "null"]
+        url:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, applied, ignored]
+        cover_letter:
+          type: ["string", "null"]
+        found_at:
+          type: string
+      required:
+        - id
+        - title
+        - company
+        - location
+        - work_type
+        - match_score
+        - status
+
+    SearchResult:
+      type: object
+      properties:
+        jobs_found:
+          type: integer
+        message:
+          type: string
+      required:
+        - jobs_found
+        - message
+
+    Application:
+      type: object
+      properties:
+        id:
+          type: integer
+        job_id:
+          type: integer
+        job_title:
+          type: string
+        company:
+          type: string
+        status:
+          type: string
+          enum: [applied, interview, offer, rejected]
+        applied_at:
+          type: string
+        notes:
+          type: ["string", "null"]
+        salary:
+          type: ["integer", "null"]
+        work_type:
+          type: string
+        match_score:
+          type: integer
+      required:
+        - id
+        - job_id
+        - job_title
+        - company
+        - status
+        - applied_at
+
+    ApplicationInput:
+      type: object
+      properties:
+        job_id:
+          type: integer
+        notes:
+          type: ["string", "null"]
+      required:
+        - job_id
+
+    ApplicationUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [applied, interview, offer, rejected]
+        notes:
+          type: ["string", "null"]
+
+    AgentStatus:
+      type: object
+      properties:
+        running:
+          type: boolean
+        jobs_scanned_today:
+          type: integer
+        applications_today:
+          type: integer
+        last_run_at:
+          type: ["string", "null"]
+      required:
+        - running
+        - jobs_scanned_today
+        - applications_today
+
+    DashboardSummary:
+      type: object
+      properties:
+        jobs_found_today:
+          type: integer
+        applications_total:
+          type: integer
+        interviews:
+          type: integer
+        offers:
+          type: integer
+        agent_running:
+          type: boolean
+        onboarding_complete:
+          type: boolean
+      required:
+        - jobs_found_today
+        - applications_total
+        - interviews
+        - offers
+        - agent_running
+        - onboarding_complete
+
+    ActivityItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [job_found, applied, interview, offer, rejected]
+        title:
+          type: string
+        company:
+          type: string
+        timestamp:
+          type: string
+        match_score:
+          type: ["integer", "null"]
+      required:
+        - id
+        - type
+        - title
+        - company
+        - timestamp
