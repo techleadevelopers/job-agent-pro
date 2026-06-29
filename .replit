@@ -21,3 +21,13 @@ timeoutMs = 20000
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+SMTP_HOST = "smtp-relay.brevo.com"
+SMTP_PORT = "587"
+SMTP_USER = "pauloti.engenharia@gmail.com"
+SMTP_FROM_EMAIL = "pauloti.engenharia@gmail.com"
+SMTP_FROM_NAME = "Paulo | AI Job Agent"
+SMTP_SECURE = "false"
