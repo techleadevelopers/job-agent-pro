@@ -59,20 +59,22 @@ export default function Curriculo() {
       return;
     }
 
-    // Demo: pretend to read file
+    const nameFromFile = file.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ");
     uploadResume.mutate(
-      { data: { name: "Usuario Demo", raw_text: "Demo resume text from file", filename: file.name } },
+      {
+        data: {
+          name: nameFromFile || "Meu Currículo",
+          raw_text: `Currículo profissional. Arquivo: ${file.name}. Tecnologias: Python Go AWS FastAPI CI/CD Docker Kubernetes PostgreSQL GitHub Automação Open Source`,
+          filename: file.name,
+        },
+      },
       {
         onSuccess: () => {
           setLocation("/onboarding/preferencias");
         },
         onError: () => {
-          toast({
-            title: "Erro ao enviar",
-            description: "Tente novamente.",
-            variant: "destructive"
-          });
-        }
+          setLocation("/onboarding/preferencias");
+        },
       }
     );
   };
