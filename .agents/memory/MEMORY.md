@@ -1,0 +1,2 @@
+- [Architecture decisions](architecture.md) — SaaS-ready MVP: user_id default=1 everywhere, multi-source discovery, service layer pattern.
+- [Job Discovery Engine](discovery-engine.md) — 3 real providers: catalog, RemoteOK API, Remotive API (all free, no API keys needed).

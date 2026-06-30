@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const jobsTable = pgTable("jobs", {
   id: serial("id").primaryKey(),
+  user_id: integer("user_id").notNull().default(1),
   title: text("title").notNull(),
   company: text("company").notNull(),
   location: text("location").notNull(),
@@ -17,6 +18,8 @@ export const jobsTable = pgTable("jobs", {
   description: text("description"),
   url: text("url"),
   hr_email: text("hr_email"),
+  contact_priority: text("contact_priority").notNull().default("medium"),
+  source: text("source").notNull().default("catalog"),
   status: text("status").notNull().default("pending"),
   cover_letter: text("cover_letter"),
   found_at: timestamp("found_at").defaultNow(),

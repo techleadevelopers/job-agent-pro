@@ -62,10 +62,10 @@ export default function Inicio() {
   };
 
   const stats = [
-    { label: "Vagas hoje", value: summary?.jobs_found_today ?? 0, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Candidaturas", value: summary?.applications_total ?? 0, icon: Send, color: "text-indigo-600", bg: "bg-indigo-50" },
-    { label: "Entrevistas", value: summary?.interviews ?? 0, icon: Users, color: "text-violet-600", bg: "bg-violet-50" },
-    { label: "Ofertas", value: summary?.offers ?? 0, icon: Trophy, color: "text-green-600", bg: "bg-green-50" },
+    { label: "Vagas encontradas", value: summary?.jobs_found_today ?? 0, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "Com email direto", value: (summary as any)?.jobs_with_email ?? 0, icon: Send, color: "text-green-600", bg: "bg-green-50" },
+    { label: "Candidaturas", value: summary?.applications_total ?? 0, icon: Users, color: "text-indigo-600", bg: "bg-indigo-50" },
+    { label: "Entrevistas", value: summary?.interviews ?? 0, icon: Trophy, color: "text-violet-600", bg: "bg-violet-50" },
   ];
 
   return (

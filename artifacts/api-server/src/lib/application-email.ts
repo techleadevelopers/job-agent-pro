@@ -1,5 +1,7 @@
-import type { CandidateProfile } from "./resume-intelligence";
 import { selectRelevantSkills } from "./resume-intelligence";
+import type { CandidateProfileData } from "../services/profile.service";
+
+type CandidateProfile = CandidateProfileData;
 
 export interface JobEmailInput {
   title: string;

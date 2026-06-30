@@ -2,15 +2,18 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { jobsTable, applicationsTable, agentTable, activityTable, resumeTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { getUserId } from "../services/user.service";
 
 const router = Router();
 
 router.get("/dashboard/summary", async (req, res) => {
+  const userId = getUserId(req);
+
   const [jobs, applications, agentRows, resumeRows] = await Promise.all([
-    db.select().from(jobsTable),
-    db.select().from(applicationsTable),
-    db.select().from(agentTable).limit(1),
-    db.select().from(resumeTable).limit(1),
+    db.select().from(jobsTable).where(eq(jobsTable.user_id, userId)),
+    db.select().from(applicationsTable).where(eq(applicationsTable.user_id, userId)),
+    db.select().from(agentTable).where(eq(agentTable.user_id, userId)).limit(1),
+    db.select().from(resumeTable).where(eq(resumeTable.user_id, userId)).limit(1),
   ]);
 
   const today = new Date();
@@ -21,6 +24,7 @@ router.get("/dashboard/summary", async (req, res) => {
   const offers = applications.filter(a => a.status === "offer").length;
   const agentRunning = agentRows[0]?.running ?? false;
   const onboardingComplete = resumeRows.length > 0;
+  const withEmail = jobs.filter(j => j.hr_email).length;
 
   res.json({
     jobs_found_today: jobsToday || jobs.length,
@@ -29,17 +33,18 @@ router.get("/dashboard/summary", async (req, res) => {
     offers,
     agent_running: agentRunning,
     onboarding_complete: onboardingComplete,
+    jobs_with_email: withEmail,
   });
 });
 
 router.get("/dashboard/activity", async (req, res) => {
-  const rows = await db.select().from(activityTable).orderBy(activityTable.timestamp);
-  const sorted = rows.sort((a, b) => (b.timestamp?.getTime() ?? 0) - (a.timestamp?.getTime() ?? 0)).slice(0, 20);
+  const userId = getUserId(req);
+  const rows = await db.select().from(activityTable).where(eq(activityTable.user_id, userId));
+  const sorted = rows
+    .sort((a, b) => (b.timestamp?.getTime() ?? 0) - (a.timestamp?.getTime() ?? 0))
+    .slice(0, 20);
   res.json(sorted.map(a => ({
-    id: a.id,
-    type: a.type,
-    title: a.title,
-    company: a.company,
+    id: a.id, type: a.type, title: a.title, company: a.company,
     timestamp: a.timestamp?.toISOString() ?? new Date().toISOString(),
     match_score: a.match_score ?? undefined,
   })));

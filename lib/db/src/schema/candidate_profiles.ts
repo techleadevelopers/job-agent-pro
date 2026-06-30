@@ -2,6 +2,7 @@ import { pgTable, serial, text, integer, timestamp, jsonb } from "drizzle-orm/pg
 
 export const candidateProfilesTable = pgTable("candidate_profiles", {
   id: serial("id").primaryKey(),
+  user_id: integer("user_id").notNull().default(1),
   resume_id: integer("resume_id"),
   name: text("name").notNull(),
   email: text("email"),

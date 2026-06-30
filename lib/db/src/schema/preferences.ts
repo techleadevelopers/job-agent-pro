@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const preferencesTable = pgTable("preferences", {
   id: serial("id").primaryKey(),
+  user_id: integer("user_id").notNull().default(1),
   work_type: text("work_type").notNull().default("remote"),
   city: text("city"),
   roles: text("roles").array().notNull().default([]),
