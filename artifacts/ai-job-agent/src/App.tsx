@@ -23,6 +23,7 @@ import Candidaturas from "@/pages/candidaturas";
 import Agente from "@/pages/agente";
 import Historico from "@/pages/historico";
 import Configuracoes from "@/pages/configuracoes";
+import TesteEmail from "@/pages/teste-email";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -87,6 +88,7 @@ function RouteWrapper() {
             <Route path="/agente" component={Agente} />
             <Route path="/historico" component={Historico} />
             <Route path="/configuracoes" component={Configuracoes} />
+            <Route path="/teste-email" component={TesteEmail} />
             <Route component={NotFound} />
           </Switch>
         </AnimatePresence>

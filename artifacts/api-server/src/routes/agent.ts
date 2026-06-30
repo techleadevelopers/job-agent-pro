@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { agentTable, jobsTable } from "@workspace/db";
+import { agentTable, jobsTable, outboundEmailsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { sendApplicationForJob } from "../services/application.service";
 import { getCandidateProfile } from "../services/profile.service";
@@ -43,6 +43,20 @@ router.post("/agent/start", async (req, res) => {
   const profile = await getCandidateProfile(userId);
   if (!profile) {
     res.status(400).json({ error: "Nenhum currículo encontrado. Faça upload primeiro." });
+    return;
+  }
+
+  // Gate: require at least 1 successful test email before bulk send
+  const successfulTests = await db
+    .select()
+    .from(outboundEmailsTable)
+    .where(and(eq(outboundEmailsTable.user_id, userId), eq(outboundEmailsTable.status, "sent")));
+  if (successfulTests.length === 0) {
+    res.status(403).json({
+      error: "Envio em lote bloqueado",
+      detail: "Acesse 'Teste de Email' e envie ao menos 1 email de teste real com sucesso antes de liberar o envio em lote.",
+      test_gate: { passed: false, required: 1, successful_tests: 0 },
+    });
     return;
   }
 

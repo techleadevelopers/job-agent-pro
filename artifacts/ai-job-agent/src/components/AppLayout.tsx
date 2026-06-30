@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Briefcase, Send, Bot, Clock, Settings } from "lucide-react";
+import { Home, Briefcase, Send, Bot, Clock, Settings, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -9,6 +9,7 @@ const sidebarItems = [
   { icon: Send, label: "Candidaturas", path: "/candidaturas" },
   { icon: Bot, label: "Agente IA", path: "/agente" },
   { icon: Clock, label: "Histórico", path: "/historico" },
+  { icon: FlaskConical, label: "Teste de Email", path: "/teste-email", highlight: true },
   { icon: Settings, label: "Configurações", path: "/configuracoes" },
 ];
 
@@ -30,12 +31,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           {sidebarItems.map((item) => {
             const isActive = location === item.path;
             const Icon = item.icon;
-            
+            const isHighlight = (item as any).highlight;
+
             return (
               <Link key={item.path} href={item.path}>
                 <span className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors relative group cursor-pointer",
-                  isActive ? "text-primary" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/50"
+                  isActive ? "text-primary" : isHighlight ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50/60" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/50"
                 )}>
                   {isActive && (
                     <motion.div
@@ -45,8 +47,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
-                  <Icon className={cn("w-5 h-5 relative z-10", isActive ? "text-primary" : "text-gray-400 group-hover:text-gray-600")} />
+                  <Icon className={cn(
+                    "w-5 h-5 relative z-10",
+                    isActive ? "text-primary" : isHighlight ? "text-amber-500 group-hover:text-amber-600" : "text-gray-400 group-hover:text-gray-600"
+                  )} />
                   <span className="relative z-10">{item.label}</span>
+                  {isHighlight && !isActive && (
+                    <span className="ml-auto relative z-10 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  )}
                 </span>
               </Link>
             );
