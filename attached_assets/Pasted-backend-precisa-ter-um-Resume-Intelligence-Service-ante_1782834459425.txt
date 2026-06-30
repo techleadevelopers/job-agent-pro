@@ -1,0 +1,148 @@
+backend precisa ter um Resume Intelligence Service antes do envio.
+
+Fluxo técnico:
+
+Upload PDF
+↓
+Extrair texto do currículo
+↓
+IA transforma em JSON estruturado
+↓
+Salvar perfil do candidato
+↓
+Gerar email usando dados reais do currículo + vaga
+↓
+Anexar PDF original
+↓
+Enviar via Brevo SMTP
+
+Estrutura que a IA deve extrair:
+
+{
+  "name": "Paulo Filho",
+  "email": "paulo@email.com",
+  "phone": "+55...",
+  "title": "Software Engineer",
+  "location": "Campinas, SP",
+  "skills": ["Python", "Go", "FastAPI", "CI/CD", "GitHub Actions"],
+  "yearsExperience": 9,
+  "summary": "Software engineer focused on automation, infrastructure and AI systems."
+}
+
+Prompt para o Replit implementar:
+
+Crie um ResumeIntelligenceService.
+
+Quando o usuário fizer upload do currículo PDF:
+
+1. Extrair texto do PDF.
+2. Enviar o texto para IA.
+3. A IA deve retornar JSON estruturado com:
+   - name
+   - email
+   - phone
+   - title
+   - location
+   - yearsExperience
+   - skills
+   - summary
+   - strongestPoints
+4. Salvar esse JSON na tabela candidate_profiles.
+5. Usar esse perfil para gerar emails de candidatura reais.
+
+Criar ApplicationEmailService:
+
+Input:
+- candidateProfile
+- job
+- resumeFilePath
+
+Gerar automaticamente:
+- subject
+- htmlBody
+- textBody
+
+Regras:
+- O assunto deve conter nome da vaga e principal stack do candidato.
+- O corpo deve usar o nome real extraído do currículo.
+- O email deve citar 3 skills mais relevantes para a vaga.
+- O email deve ser curto, profissional e em português.
+- Sempre anexar o PDF original do currículo.
+- Nunca enviar se candidateProfile.name estiver vazio.
+- Nunca enviar se recruiterEmail estiver vazio.
+- Nunca enviar se resumeFilePath não existir.
+
+Exemplo:
+Assunto:
+Candidatura — Backend Engineer | Python, Go e Automação
+
+Corpo:
+Olá,
+
+Me chamo Paulo Filho e gostaria de me candidatar à vaga de Backend Engineer.
+
+Tenho experiência com Python, Go, automação, APIs REST e CI/CD, pontos que combinam diretamente com os requisitos da vaga.
+
+Segue meu currículo em anexo.
+
+Obrigado,
+Paulo Filho
+
+Modelo de código:
+
+type CandidateProfile = {
+  name: string
+  email?: string
+  phone?: string
+  title: string
+  location?: string
+  yearsExperience?: number
+  skills: string[]
+  summary?: string
+  strongestPoints?: string[]
+}
+
+type Job = {
+  title: string
+  company: string
+  recruiterEmail: string
+  description: string
+  location?: string
+  sourceUrl?: string
+  matchScore: number
+}
+
+Função principal:
+
+async function sendApplication(jobId: string, userId: string) {
+  const profile = await getCandidateProfile(userId)
+  const job = await getJob(jobId)
+  const resume = await getActiveResume(userId)
+
+  if (!profile?.name) throw new Error("Nome do candidato não encontrado no currículo")
+  if (!job?.recruiterEmail) throw new Error("Email da vaga não encontrado")
+  if (!resume?.filePath) throw new Error("Currículo não encontrado")
+  if (job.matchScore < 85) throw new Error("Match abaixo do mínimo permitido")
+
+  const email = await generateApplicationEmail({
+    candidateProfile: profile,
+    job,
+  })
+
+  await emailService.send({
+    to: job.recruiterEmail,
+    subject: email.subject,
+    html: email.htmlBody,
+    text: email.textBody,
+    attachments: [
+      {
+        filename: `${profile.name.replaceAll(" ", "_")}_Curriculo.pdf`,
+        path: resume.filePath,
+      },
+    ],
+  })
+
+  await markApplicationAsSent(jobId, userId)
+}
+
+O segredo é esse: não gerar email direto do PDF toda vez. Primeiro transforma o currículo em perfil estruturado, salva no banco, depois o sistema usa esse perfil para tudo
