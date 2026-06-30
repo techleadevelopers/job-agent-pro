@@ -9,6 +9,7 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+  tls: { rejectUnauthorized: false },
 });
 
 export async function verifySmtp(): Promise<boolean> {
@@ -27,20 +28,36 @@ export interface SendEmailOptions {
   subject: string;
   html: string;
   text: string;
-  attachments?: { filename: string; content: Buffer | string; contentType: string }[];
+  attachments?: { filename: string; content?: Buffer | string; path?: string; contentType?: string }[];
   replyTo?: string;
 }
 
-export async function sendEmail(opts: SendEmailOptions): Promise<{ messageId: string }> {
+export async function sendEmail(opts: SendEmailOptions, retries = 2): Promise<{ messageId: string }> {
+  const testMode = process.env.TEST_MODE === "true";
+  const testEmail = process.env.TEST_EMAIL;
+  const actualTo = testMode && testEmail ? testEmail : opts.to;
   const from = `"${process.env.SMTP_FROM_NAME ?? "AI Job Agent"}" <${process.env.SMTP_FROM_EMAIL}>`;
-  const info = await transporter.sendMail({
-    from,
-    to: opts.to,
-    replyTo: opts.replyTo ?? process.env.SMTP_FROM_EMAIL,
-    subject: opts.subject,
-    html: opts.html,
-    text: opts.text,
-    attachments: opts.attachments,
-  });
-  return { messageId: info.messageId };
+
+  const subjectPrefix = testMode && testEmail && testEmail !== opts.to ? `[TESTE → ${opts.to}] ` : "";
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const info = await transporter.sendMail({
+        from,
+        to: actualTo,
+        replyTo: opts.replyTo ?? process.env.SMTP_FROM_EMAIL,
+        subject: subjectPrefix + opts.subject,
+        html: opts.html,
+        text: opts.text,
+        attachments: opts.attachments,
+      });
+      logger.info({ messageId: info.messageId, to: actualTo, testMode }, "Email sent");
+      return { messageId: info.messageId };
+    } catch (err: any) {
+      logger.warn({ err: err.message, attempt }, "Email send attempt failed");
+      if (attempt === retries) throw err;
+      await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+    }
+  }
+  throw new Error("All retry attempts failed");
 }

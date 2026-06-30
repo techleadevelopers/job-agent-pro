@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useListJobs, useCreateApplication, useIgnoreJob, useGetJob, getListJobsQueryKey, getGetJobQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search, MapPin, X, ChevronRight } from "lucide-react";
+import { Search, MapPin, X, ChevronRight, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import SendApplicationButton from "@/components/SendApplicationButton";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
 const item = { hidden: { opacity: 0, x: -16 }, show: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 28 } } };
@@ -78,6 +79,10 @@ export default function Vagas() {
     setSheetOpen(true);
   };
 
+  const handleEmailSuccess = () => {
+    qc.invalidateQueries({ queryKey: getListJobsQueryKey() });
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-6">
       <div>
@@ -134,7 +139,6 @@ export default function Vagas() {
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               className="bg-white/70 backdrop-blur-sm border border-gray-100 rounded-2xl p-5 shadow-sm flex items-center gap-4 group"
             >
-              {/* Company avatar */}
               <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center flex-shrink-0 text-indigo-700 font-bold text-lg">
                 {job.company[0]}
               </div>
@@ -191,7 +195,7 @@ export default function Vagas() {
 
       {/* Detail Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-[480px] sm:w-[480px] overflow-y-auto">
+        <SheetContent className="w-[520px] sm:w-[520px] overflow-y-auto">
           {!selectedJob ? (
             <div className="space-y-4 pt-4">
               {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-xl" />)}
@@ -222,6 +226,15 @@ export default function Vagas() {
                   <MapPin className="w-3 h-3" />{selectedJob.location}
                 </span>
               </div>
+
+              {/* HR Email badge */}
+              {(selectedJob as any).hr_email && (
+                <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 rounded-xl px-3 py-2 border border-gray-100">
+                  <Mail className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
+                  <span className="font-medium">Recrutador:</span>
+                  <span className="text-indigo-600 font-mono">{(selectedJob as any).hr_email}</span>
+                </div>
+              )}
 
               {selectedJob.skills_match && selectedJob.skills_match.length > 0 && (
                 <div>
@@ -262,17 +275,42 @@ export default function Vagas() {
               )}
 
               {selectedJob.status === "pending" && (
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    className="flex-1 rounded-full"
-                    onClick={() => handleApply(selectedJob.id)}
-                    disabled={createApplication.isPending}
-                  >
-                    {createApplication.isPending ? "Aplicando..." : "Aplicar agora"}
-                  </Button>
-                  <Button variant="outline" className="rounded-full" onClick={() => setSheetOpen(false)}>
-                    <X className="w-4 h-4" />
-                  </Button>
+                <div className="space-y-3 pt-2 border-t border-gray-100">
+                  {/* Real email button */}
+                  <SendApplicationButton
+                    jobId={selectedJob.id}
+                    matchScore={selectedJob.match_score}
+                    jobTitle={selectedJob.title}
+                    company={selectedJob.company}
+                    hrEmail={(selectedJob as any).hr_email}
+                    onSuccess={() => {
+                      handleEmailSuccess();
+                      setTimeout(() => setSheetOpen(false), 2000);
+                    }}
+                  />
+
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      className="flex-1 rounded-full"
+                      onClick={() => handleApply(selectedJob.id)}
+                      disabled={createApplication.isPending}
+                    >
+                      {createApplication.isPending ? "Marcando..." : "Só marcar como aplicada"}
+                    </Button>
+                    <Button variant="ghost" className="rounded-full" onClick={() => setSheetOpen(false)}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {selectedJob.status === "applied" && (
+                <div className="pt-2 border-t border-gray-100">
+                  <div className="flex items-center gap-2 text-sm text-indigo-600 bg-indigo-50 rounded-xl px-4 py-3">
+                    <Mail className="w-4 h-4" />
+                    <span className="font-medium">Candidatura já enviada</span>
+                  </div>
                 </div>
               )}
             </div>

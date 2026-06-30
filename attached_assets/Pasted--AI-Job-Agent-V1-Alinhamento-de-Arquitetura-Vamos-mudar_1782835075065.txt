@@ -1,0 +1,341 @@
+# AI Job Agent V1 — Alinhamento de Arquitetura
+
+Vamos mudar a direção do projeto.
+
+Este sistema NÃO será inicialmente um SaaS.
+
+O objetivo é construir um agente de IA de uso pessoal totalmente funcional para encontrar vagas reais e enviar candidaturas reais automaticamente.
+
+O foco é provar que o fluxo funciona de ponta a ponta (End-to-End).
+
+---
+
+# Objetivo
+
+O sistema deve funcionar como um agente inteligente.
+
+Fluxo esperado:
+
+1. Usuário faz upload do currículo em PDF.
+2. O sistema extrai automaticamente:
+
+   * Nome
+   * Email
+   * Telefone
+   * Cargo
+   * Tecnologias
+   * Tempo de experiência
+   * Cidade
+3. A IA cria um perfil estruturado do candidato.
+4. O sistema pesquisa vagas reais em múltiplas fontes públicas.
+5. A IA calcula compatibilidade.
+6. O sistema identifica vagas com email de contato disponível.
+7. A IA gera uma candidatura personalizada.
+8. O currículo original é anexado.
+9. O sistema envia o email real via SMTP.
+10. Todo o processo fica registrado.
+
+Não quero mock.
+Não quero candidaturas simuladas.
+Quero um fluxo funcional.
+
+---
+
+# Estratégia de Busca
+
+Não depender apenas do Google.
+
+Criar um Job Discovery Engine modular.
+
+Cada fonte deve ser um Provider independente.
+
+Exemplo:
+
+Google Provider
+
+Bing Provider
+
+Yahoo Provider
+
+Career Page Provider
+
+Tech Jobs Provider
+
+Company Careers Provider
+
+Future Providers
+
+Cada provider retorna:
+
+* título
+* empresa
+* localização
+* descrição
+* url
+* email encontrado
+* origem
+
+---
+
+# Match Inteligente
+
+Não usar apenas palavras-chave.
+
+A IA deve considerar:
+
+* senioridade
+* tecnologias
+* contexto da vaga
+* experiência do currículo
+* localização
+* idioma
+* modalidade
+* score
+
+Resultado:
+
+95%
+
+Motivos
+
+✔ Python
+
+✔ Go
+
+✔ APIs
+
+✔ Automação
+
+✖ Kubernetes
+
+---
+
+# Extração de Contato
+
+O sistema deve procurar automaticamente:
+
+rh@
+
+jobs@
+
+careers@
+
+talent@
+
+hiring@
+
+people@
+
+recrutamento@
+
+recruitment@
+
+Caso existam vários emails, escolher o mais relevante.
+
+Caso não exista email:
+
+Marcar a vaga como:
+
+"Necessita aplicação manual"
+
+---
+
+# Geração da Candidatura
+
+Nunca utilizar templates fixos.
+
+A IA deve gerar um email exclusivo para cada vaga.
+
+Entrada:
+
+Perfil do candidato
+
+*
+
+Descrição da vaga
+
+*
+
+Empresa
+
+Saída:
+
+Assunto
+
+Corpo
+
+Resumo profissional
+
+Skills relevantes
+
+Anexar currículo original
+
+---
+
+# Envio
+
+SMTP Brevo
+
+Fluxo:
+
+Gerar email
+
+↓
+
+Anexar currículo
+
+↓
+
+Enviar
+
+↓
+
+Salvar status
+
+↓
+
+Registrar Message ID
+
+↓
+
+Registrar Logs
+
+↓
+
+Aguardar resposta
+
+---
+
+# Dashboard
+
+Quero uma experiência extremamente simples.
+
+Fluxo do usuário:
+
+Upload Currículo
+
+↓
+
+Perfil IA
+
+↓
+
+Buscar vagas
+
+↓
+
+Analisando vagas...
+
+↓
+
+Encontradas
+
+↓
+
+Enviar candidaturas
+
+↓
+
+Histórico
+
+Nada de Analytics na primeira tela.
+
+Nada de gráficos desnecessários.
+
+O sistema deve parecer um assistente, não um ERP.
+
+---
+
+# Banco
+
+Criar entidades separadas:
+
+Users
+
+CandidateProfile
+
+Resume
+
+Jobs
+
+JobProviders
+
+Applications
+
+OutgoingEmails
+
+EmailLogs
+
+ActivityLogs
+
+Tudo preparado para múltiplos usuários no futuro.
+
+---
+
+# Código
+
+Arquitetura limpa.
+
+Separar responsabilidades.
+
+ResumeService
+
+ProfileService
+
+DiscoveryService
+
+MatchingService
+
+ApplicationService
+
+EmailService
+
+ProviderManager
+
+SearchProviders
+
+Nunca colocar regras diretamente na interface.
+
+Toda regra deve ficar no backend.
+
+---
+
+# Escalabilidade
+
+Mesmo sendo um MVP pessoal, o código deve estar preparado para evoluir para SaaS.
+
+Nada hardcoded.
+
+Nada dependente de um único usuário.
+
+Tudo baseado em User ID.
+
+---
+
+# Qualidade
+
+Priorizar:
+
+Código limpo
+
+Baixo acoplamento
+
+Providers independentes
+
+Logs completos
+
+Tratamento de erro
+
+Retry
+
+Observabilidade
+
+Performance
+
+Organização
+
+---
+
+Objetivo final:
+
+Construir um verdadeiro AI Job Agent capaz de encontrar vagas reais, analisar compatibilidade, gerar candidaturas personalizadas e enviar emails reais automaticamente, mantendo uma arquitetura sólida, modular e pronta para futura expansão.
